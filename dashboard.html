@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ChatSorter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
+        nav { padding: 1rem 0; border-bottom: 1px solid #222; background: #0a0a0a; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: 700; color: #00ff88; }
+        .user-menu { display: flex; align-items: center; gap: 1.5rem; }
+        .user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .user-avatar { width: 38px; height: 38px; background: linear-gradient(135deg, #00ff88, #00cc66); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #0a0a0a; font-size: 0.9rem; }
+        .user-email { color: #888; font-size: 0.9rem; }
+        .logout-btn { padding: 0.6rem 1.2rem; background: transparent; border: 1px solid #333; color: #888; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 600; font-family: inherit; }
+        .logout-btn:hover { border-color: #ff4444; color: #ff4444; }
+        .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; padding: 2rem 0; }
+        .sidebar { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; height: fit-content; position: sticky; top: 100px; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; color: #888; text-decoration: none; transition: all 0.2s; cursor: pointer; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .sidebar-link:hover { background: #1a1a1a; color: #e0e0e0; }
+        .sidebar-link.active { background: rgba(0, 255, 136, 0.1); color: #00ff88; border-left: 3px solid #00ff88; }
+        .main-content { min-height: calc(100vh - 200px); }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .page-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #222; }
+        .page-title { font-size: 2.5rem; color: #00ff88; margin-bottom: 0.5rem; }
+        .page-subtitle { color: #666; font-size: 1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 2rem; position: relative; transition: all 0.2s; }
+        .stat-card:hover { border-color: #333; transform: translateY(-2px); }
+        .stat-card.warning { border-color: #ffc800; }
+        .stat-card.danger { border-color: #ff4444; }
+        .stat-label { color: #666; font-size: 0.8rem; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: #00ff88; margin-bottom: 0.5rem; word-break: break-word; }
+        .stat-card.warning .stat-value { color: #ffc800; }
+        .stat-card.danger .stat-value { color: #ff4444; }
+        .stat-subtext { color: #888; font-size: 0.9rem; }
+        .progress-bar { background: #1a1a1a; border-radius: 6px; height: 8px; overflow: hidden; margin-top: 1rem; }
+        .progress-fill { background: linear-gradient(90deg, #00ff88, #00cc66); height: 100%; transition: width 0.3s ease; }
+        .progress-fill.warning { background: linear-gradient(90deg, #ffc800, #ff8800); }
+        .progress-fill.danger { background: linear-gradient(90deg, #ff4444, #cc0000); }
+        .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222; }
+        .card-title { font-size: 1.3rem; color: #00ff88; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; font-family: inherit; }
+        .btn-primary { background: #00ff88; color: #0a0a0a; }
+        .btn-primary:hover { background: #00cc66; transform: translateY(-2px); }
+        .btn-secondary { background: transparent; border: 1px solid #333; color: #888; }
+        .btn-secondary:hover { border-color: #00ff88; color: #00ff88; }
+        .code-block { background: #000; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.85rem; color: #00ff88; overflow-x: auto; position: relative; word-break: break-all; white-space: pre-wrap; }
+        .copy-btn { position: absolute; top: 1rem; right: 1rem; padding: 0.4rem 0.8rem; background: #1a1a1a; border: 1px solid #333; color: #888; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .copy-btn:hover { border-color: #00ff88; color: #00ff88; }
+        .copy-btn.copied { background: #00ff88; color: #0a0a0a; border-color: #00ff88; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: left; padding: 1rem; background: #0a0a0a; color: #666; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        td { padding: 1rem; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+        tr:hover { background: #0f0f0f; }
+        .loading { text-align: center; padding: 4rem; color: #555; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #222; border-top-color: #00ff88; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .alert { border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: none; border: 1px solid; }
+        .alert.show { display: flex; align-items: center; gap: 1rem; }
+        .alert.danger { background: rgba(255, 68, 68, 0.1); border-color: #ff4444; color: #ff4444; }
+        .alert.warning { background: rgba(255, 200, 0, 0.1); border-color: #ffc800; color: #ffc800; }
+        .alert.success { background: rgba(0, 255, 136, 0.1); border-color: #00ff88; color: #00ff88; }
+        input, select, textarea { width: 100%; padding: 0.85rem; background: #0a0a0a; border: 1px solid #222; border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #00ff88; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: #888; font-size: 0.9rem; font-weight: 600; }
+        .activity-item { background: #0a0a0a; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; border-left: 3px solid #00ff88; }
+        .activity-time { color: #666; font-size: 0.8rem; margin-bottom: 0.25rem; }
+        .activity-event { color: #e0e0e0; font-weight: 600; margin-bottom: 0.25rem; }
+        .activity-details { color: #888; font-size: 0.85rem; font-family: monospace; }
+        .upgrade-banner { background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.1)); border: 1px solid #00ff88; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; text-align: center; }
+        .upgrade-banner h3 { color: #00ff88; margin-bottom: 0.5rem; }
+        .upgrade-banner p { color: #aaa; margin-bottom: 1rem; }
+        @media (max-width: 968px) { .dashboard-layout { grid-template-columns: 1fr; } .sidebar { position: static; } .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo"><span></span><span>ChatSorter</span></div>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-email" id="userEmail">Loading...</span>
+                        <div class="user-avatar" id="userAvatar">--</div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="alert danger" id="errorAlert"><span></span><div id="errorText">Error</div></div>
+        <div class="alert warning" id="warningAlert"><span></span><div id="warningText">Warning</div></div>
+        <div class="alert success" id="successAlert"><span>✓</span><div id="successText">Success</div></div>
+
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a class="sidebar-link active" data-section="overview"><span></span><span>Overview</span></a></li>
+                    <li><a class="sidebar-link" data-section="implement"><span></span><span>How to Implement</span></a></li>
+                    <li><a class="sidebar-link" data-section="api"><span></span><span>API Keys</span></a></li>
+                    <li><a class="sidebar-link" data-section="usage"><span></span><span>Usage</span></a></li>
+                    <li><a class="sidebar-link" data-section="tester"><span></span><span>API Tester</span></a></li>
+                    <li><a class="sidebar-link" data-section="contact"><span></span><span>Contact</span></a></li>
+                    <li><a class="sidebar-link" data-section="settings"><span>⚙️</span><span>Settings</span></a></li>
+                </ul>
+            </aside>
+
+            <main class="main-content">
+                <div id="loadingState" class="loading"><div class="spinner"></div><p>Loading dashboard...</p></div>
+
+                <section class="content-section active" id="overview" style="display:none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Overview</h1>
+                        <p class="page-subtitle">Monitor your ChatSorter usage in real-time</p>
+                    </div>
+
+                    <div id="upgradeBanner" class="upgrade-banner" style="display:none;">
+                        <h3>Upgrade Your Plan</h3>
+                        <p>You're on the <span id="currentPlanBanner">Demo</span> plan. Upgrade for more API calls and features!</p>
+                        <button class="btn btn-primary" onclick="alert('Stripe integration coming soon!')">Upgrade Now</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card" id="apiCallsCard">
+                            <div class="stat-label">API Calls This Month</div>
+                            <div class="stat-value" id="apiCallsValue">0</div>
+                            <div class="stat-subtext"><span id="apiCallsRemaining">0</span> remaining</div>
+                            <div class="progress-bar"><div class="progress-fill" id="apiCallsProgress" style="width: 0%"></div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Current Plan</div>
+                            <div class="stat-value" id="currentPlan" style="font-size: 1.8rem;">LOADING</div>
+                            <div class="stat-subtext" id="planPrice">$0/mo</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Storage Limit</div>
+                            <div class="stat-value" id="storageValue">0 GB</div>
+                            <div class="stat-subtext">Available storage</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Account Status</div>
+                            <div class="stat-value" style="font-size: 1.8rem; color: #00ff88;">ACTIVE</div>
+                            <div class="stat-subtext">All systems operational</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">📋 Account Details</div></div>
+                        <table>
+                            <tr><td><strong>Email</strong></td><td id="accountEmail">--</td></tr>
+                            <tr><td><strong>Plan</strong></td><td id="accountPlan">--</td></tr>
+                            <tr><td><strong>API Endpoint</strong></td><td>http://localhost:5001</td></tr>
+                            <tr><td><strong>Member Since</strong></td><td id="memberSince">--</td></tr>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="content-section" id="implement">
+    <div class="page-header">
+        <h1 class="page-title">How to Implement</h1>
+        <p class="page-subtitle">Real backend usage — no magic</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🚀 Backend Integration (Flask + LLaMA)</div>
+        </div>
+
+        <p style="color:#888; margin-bottom:1.5rem;">
+            ChatSorter is called directly from your backend. Each user message is stored,
+            relevant memories are retrieved, and only meaningful context is injected into
+            the LLM prompt.
+        </p>
+
+        <h3 style="color:#00ff88; margin:2rem 0 1rem;">Step 1: Send User Message to ChatSorter</h3>
+        <div class="code-block" style="padding-right:100px;">
+requests.post(
+    "http://localhost:5001/chat",
+    headers={
+        "Authorization": "Bearer <span style='color:#ffc800;'>YOUR_API_KEY</span>",
+        "Content-Type": "application/json"
+    },
+    json={
+        "chat_id": chat_id,
+        "message": user_message
+    },
+    timeout=3
+)
+<button class="copy-btn">Copy</button>
+        </div>
+
+        <h3 style="color:#00ff88; margin:2rem 0 1rem;">Step 2: Extract Relevant Memories</h3>
+        <p style="color:#888; margin-bottom:1rem;">
+            Only high-signal memories are kept. Junk never reaches the model.
+        </p>
+
+        <div class="code-block">
+memories = cs_response.get("context", [])
+context = []
+
+for mem in memories[:5]:
+    text = mem.get("message") or mem.get("summary", "")
+    if text and len(text.strip()) >= 10:
+        context.append(f"RELEVANT_MEMORY: {text.strip()}")
+
+context_str = "\n".join(context)
+        </div>
+
+        <h3 style="color:#00ff88; margin:2rem 0 1rem;">Step 3: Inject Memory into LLM Prompt</h3>
+        <div class="code-block" style="padding-right:100px;">
+prompt = "&lt;|im_start|&gt;system
+You are a senior software engineer.
+Use retrieved memory only if relevant.
+&lt;|im_end|&gt;\n"
+
+if context_str:
+    prompt += f"&lt;|im_start|&gt;user
+Context from previous interactions:
+{context_str}
+&lt;|im_end|&gt;\n"
+
+prompt += f"&lt;|im_start|&gt;user
+{user_message}
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant"
+<button class="copy-btn">Copy</button>
+        </div>
+
+        <h3 style="color:#00ff88; margin:2rem 0 1rem;">Step 4: Run Local LLaMA Model</h3>
+        <div class="code-block">
+result = llm(
+    prompt,
+    max_tokens=1024,
+    temperature=0.1,
+    top_p=0.95,
+    stop=["&lt;|im_end|&gt;"]
+)
+
+reply = result["choices"][0]["text"].strip()
+        </div>
+
+        <h3 style="color:#00ff88; margin:2rem 0 1rem;">What ChatSorter Actually Does</h3>
+        <ul style="color:#ccc; margin-left:1.5rem; line-height:2;">
+            <li>✓ Stores every message with semantic embeddings</li>
+            <li>✓ Scores importance (0–10)</li>
+            <li>✓ Returns only relevant memories per message</li>
+            <li>✓ Prevents prompt bloat</li>
+            <li>✓ Works with local or hosted LLMs</li>
+        </ul>
+    </div>
+</section>
+
+
+                <section class="content-section" id="api">
+                    <div class="page-header">
+                        <h1 class="page-title">API Keys</h1>
+                        <p class="page-subtitle">Your authentication credentials</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">Your API Key</div></div>
+                        <div class="code-block" style="padding-right: 100px;"><span id="apiKeyDisplay">Loading...</span><button class="copy-btn" id="copyKeyBtn">Copy</button></div>
+                        <p style="color: #666; margin-top: 1rem; font-size: 0.9rem;"> Keep secure. Never commit to version control.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">📖 cURL Example</div></div>
+                        <div class="code-block" style="padding-right: 100px;" id="curlExample">Loading...</div>
+                        <button class="copy-btn" style="position: absolute; margin-top: -4rem; right: 3rem;" id="copyCurlBtn">Copy</button>
+                    </div>
+                </section>
+
+                <section class="content-section" id="settings">
+                    <div class="page-header">
+                        <h1 class="page-title">Memory Settings</h1>
+                        <p class="page-subtitle">Customize how ChatSorter processes your data</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">⚙️ Summary Configuration</div></div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Messages Per Summary</label>
+                            <input type="number" id="messagesPerSummary" min="1" max="20" value="5" style="width: 150px;">
+                            <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">
+                                Group this many messages before creating a summary (1-20)
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Summary Detail Level: <span id="detailValue">5</span></label>
+                            <input type="range" id="summaryDetail" min="1" max="10" value="5" style="width: 100%;">
+                            <div style="display: flex; justify-content: space-between; color: #666; font-size: 0.85rem; margin-top: 0.5rem;">
+                                <span>Minimal</span>
+                                <span>Balanced</span>
+                                <span>Detailed</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Importance Threshold: <span id="thresholdValue">8.0</span></label>
+                            <input type="range" id="importanceThreshold" min="0" max="10" step="0.5" value="8.0" style="width: 100%;">
+                            <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">
+                                Only save memories with importance score above this threshold
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Max Memories Per Request</label>
+                            <input type="number" id="maxMemories" min="1" max="10" value="5" style="width: 150px;">
+                            <p style="color: #666; font-size: 0.85rem; margin-top: 0.5rem;">
+                                Maximum relevant memories returned per API call (1-10)
+                            </p>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="window.saveSettings()">Save Settings</button>
+                        <button class="btn btn-secondary" onclick="window.loadSettings()" style="margin-left: 1rem;">Reset to Defaults</button>
+                    </div>
+                </section>
+
+                <section class="content-section" id="usage">
+                    <div class="page-header">
+                        <h1 class="page-title">Usage Analytics</h1>
+                        <p class="page-subtitle">Track API consumption in real-time</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📈 Recent Activity</div>
+                            <button class="btn btn-secondary" onclick="window.loadActivity()">Refresh</button>
+                        </div>
+                        <div id="activityLog" style="max-height: 500px; overflow-y: auto;">
+                            <p style="color:#666;padding:2rem;text-align:center;">No activity yet. Start using the API!</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="content-section" id="tester">
+                    <div class="page-header">
+                        <h1 class="page-title">API Tester</h1>
+                        <p class="page-subtitle">Test endpoints in real-time</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">🧪 Send Test Request</div></div>
+                        <div class="form-group">
+                            <label class="form-label">Endpoint</label>
+                            <select id="testEndpoint">
+                                <option value="/chat">POST /chat - Store & Retrieve Memory</option>
+                                <option value="/search">POST /search - Search Memory</option>
+                                <option value="/process">POST /process - Store Message Only</option>
+                                <option value="/dashboard">GET /dashboard - Get Stats</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="payloadGroup">
+                            <label class="form-label">Request Body (JSON)</label>
+                            <textarea id="testPayload" rows="6">{"chat_id": "test_user_123", "message": "I love pizza and hate olives"}</textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="window.sendTestRequest()">Send Request</button>
+                        <div id="testResult" style="margin-top: 1.5rem; display: none;">
+                            <strong style="color:#00ff88; display: block; margin-bottom: 0.5rem;">Response:</strong>
+                            <div class="code-block" id="testResultContent" style="max-height: 400px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="content-section" id="contact">
+                    <div class="page-header">
+                        <h1 class="page-title">Contact Support</h1>
+                        <p class="page-subtitle">Get help with your account</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div class="card-title">💬 Send Message</div></div>
+                        <div class="form-group">
+                            <label class="form-label">Subject</label>
+                            <input type="text" id="contactSubject" placeholder="Brief description">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Message</label>
+                            <textarea id="contactMessage" rows="6" placeholder="Describe your issue..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="window.sendContactMessage()">Send Message</button>
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #222; color: #666; font-size: 0.9rem;">
+                            <div>theiogamer1st@gmail.com</div>
+                            <div>Response: Within 24 hours</div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const app = initializeApp({
+            apiKey: "AIzaSyBdXvmBmjNuT1cCUUU_w9pUaRKTimtcgYA",
+            authDomain: "chatsorter.firebaseapp.com",
+            projectId: "chatsorter",
+            storageBucket: "chatsorter.firebasestorage.app",
+            messagingSenderId: "299452275355",
+            appId: "1:299452275355:web:1403fca56fd284c15a443e"
+        });
+
+        const auth = getAuth(app);
+        const API = 'http://localhost:5001';
+        let apiKey = null;
+        let currentUser = null;
+        let autoRefreshInterval = null;
+
+        function showAlert(type, message) {
+            const alertId = type + 'Alert';
+            const textId = type + 'Text';
+            document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
+            document.getElementById(textId).textContent = message;
+            document.getElementById(alertId).classList.add('show');
+            setTimeout(() => document.getElementById(alertId).classList.remove('show'), 5000);
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUser = user;
+            document.getElementById('userAvatar').textContent = user.email.substring(0,2).toUpperCase();
+            document.getElementById('userEmail').textContent = user.email;
+            
+            try {
+                const response = await fetch(`${API}/get-my-key`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: user.email, create_if_missing: true})
+                });
+                const data = await response.json();
+                if (data.success && data.api_key) {
+                    apiKey = data.api_key;
+                    localStorage.setItem('chatsorter_api_key', apiKey);
+                    await loadDashboard();
+                    startAutoRefresh();
+                } else {
+                    hideLoad();
+                    showAlert('error', 'Failed to get API key');
+                }
+            } catch(e) {
+                hideLoad();
+                showAlert('error', 'Cannot connect to API server on localhost:5001');
+            }
+        });
+
+        window.loadSettings = async function() {
+    try {
+        const response = await fetch(`${API}/get-settings`, {
+            headers: {'Authorization': `Bearer ${apiKey}`}
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const s = data.settings;
+            document.getElementById('messagesPerSummary').value = s.messages_per_summary;
+            document.getElementById('summaryDetail').value = s.summary_detail_level;
+            document.getElementById('detailValue').textContent = s.summary_detail_level;
+            document.getElementById('importanceThreshold').value = s.importance_threshold;
+            document.getElementById('thresholdValue').textContent = s.importance_threshold;
+            document.getElementById('maxMemories').value = s.max_memories_returned;
+        }
+    } catch(e) {
+        showAlert('error', 'Failed to load settings');
+    }
+};
+
+window.saveSettings = async function() {
+    try {
+        const settings = {
+            messages_per_summary: parseInt(document.getElementById('messagesPerSummary').value),
+            summary_detail_level: parseInt(document.getElementById('summaryDetail').value),
+            importance_threshold: parseFloat(document.getElementById('importanceThreshold').value),
+            max_memories_returned: parseInt(document.getElementById('maxMemories').value)
+        };
+        
+        const response = await fetch(`${API}/update-settings`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showAlert('success', 'Settings saved successfully!');
+        } else {
+            showAlert('error', data.error || 'Failed to save settings');
+        }
+    } catch(e) {
+        showAlert('error', 'Failed to save settings');
+    }
+};
+
+// Update display values on slider change
+document.addEventListener('DOMContentLoaded', () => {
+    const detailSlider = document.getElementById('summaryDetail');
+    const thresholdSlider = document.getElementById('importanceThreshold');
+    
+    if (detailSlider) {
+        detailSlider.addEventListener('input', function() {
+            document.getElementById('detailValue').textContent = this.value;
+        });
+    }
+    
+    if (thresholdSlider) {
+        thresholdSlider.addEventListener('input', function() {
+            document.getElementById('thresholdValue').textContent = this.value;
+        });
+    }
+});
+
+// Load settings when tab is clicked
+document.querySelector('[data-section="settings"]')?.addEventListener('click', () => {
+    window.loadSettings();
+});
+
+        function hideLoad() {
+            document.getElementById('loadingState').style.display='none';
+            document.getElementById('overview').style.display='block';
+        }
+
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(async () => {
+                await loadDashboard(true);
+            }, 5000);
+        }
+
+        async function loadDashboard(silent = false) {
+            try {
+                const response = await fetch(`${API}/dashboard`, {headers: {'Authorization': `Bearer ${apiKey}`}});
+                const data = await response.json();
+                if (!data.success) { 
+                    if (!silent) { hideLoad(); showAlert('error', data.error); }
+                    return;
+                }
+
+                const used = data.usage.retrievals_used;
+                const remaining = data.usage.retrievals_remaining;
+                const percent = data.usage.retrievals_percent;
+                
+                document.getElementById('apiCallsValue').textContent = used.toLocaleString();
+                document.getElementById('apiCallsRemaining').textContent = remaining === 'Unlimited' ? '∞' : remaining.toLocaleString();
+                document.getElementById('currentPlan').textContent = data.customer.plan.toUpperCase();
+                document.getElementById('currentPlanBanner').textContent = data.customer.plan.toUpperCase();
+                document.getElementById('accountEmail').textContent = data.customer.email;
+                document.getElementById('accountPlan').textContent = data.customer.plan;
+                document.getElementById('apiKeyDisplay').textContent = apiKey;
+                document.getElementById('planPrice').textContent = getPlanPrice(data.customer.plan);
+                document.getElementById('storageValue').textContent = data.limits.storage_gb + ' GB';
+                document.getElementById('memberSince').textContent = new Date(currentUser.metadata.creationTime).toLocaleDateString();
+                document.getElementById('implKey1').textContent = apiKey;
+                document.getElementById('implKey2').textContent = apiKey;
+                
+                if (data.customer.plan === 'demo' && used > 50) {
+                    document.getElementById('upgradeBanner').style.display = 'block';
+                }
+                
+                const progress = document.getElementById('apiCallsProgress');
+                const card = document.getElementById('apiCallsCard');
+                card.classList.remove('warning', 'danger');
+                progress.classList.remove('warning', 'danger');
+                
+                if (remaining === 'Unlimited') { 
+                    progress.style.width = '10%'; 
+                } else {
+                    progress.style.width = percent + '%';
+                    if (percent >= 90) { 
+                        card.classList.add('danger'); 
+                        progress.classList.add('danger');
+                        if (!silent) showAlert('warning', 'You\'ve used ' + percent.toFixed(1) + '% of your API calls!');
+                    } else if (percent >= 80) { 
+                        card.classList.add('warning'); 
+                        progress.classList.add('warning');
+                    }
+                }
+
+                document.getElementById('curlExample').textContent = `curl -X POST ${API}/chat \\
+  -H "Authorization: Bearer ${apiKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"chat_id": "user_123", "message": "I love pizza"}'`;
+
+                if (!silent) {
+                    hideLoad();
+                    showAlert('success', 'Dashboard loaded!');
+                }
+            } catch (e) { 
+                if (!silent) {
+                    hideLoad(); 
+                    showAlert('error', 'Failed to load dashboard');
+                }
+            }
+        }
+
+        function getPlanPrice(plan) {
+            const prices = {demo: 'Free', starter: '$49/mo', growth: '$100/mo', enterprise: 'Custom'};
+            return prices[plan.toLowerCase()] || 'Free';
+        }
+
+        window.loadActivity = async function() {
+            try {
+                const response = await fetch(`${API}/activity?limit=20`, {headers: {'Authorization': `Bearer ${apiKey}`}});
+                const data = await response.json();
+                if (data.success && data.activities && data.activities.length > 0) {
+                    let html = '';
+                    data.activities.forEach(a => {
+                        const details = a.details ? JSON.stringify(a.details, null, 2) : '';
+                        html += `<div class="activity-item">
+                            <div class="activity-time">${new Date(a.timestamp).toLocaleString()}</div>
+                            <div class="activity-event">${a.event_type}</div>
+                            <div class="activity-details">${details}</div>
+                        </div>`;
+                    });
+                    document.getElementById('activityLog').innerHTML = html;
+                } else {
+                    document.getElementById('activityLog').innerHTML = '<p style="color:#666;padding:2rem;text-align:center;">No activity yet. Start using the API!</p>';
+                }
+            } catch(e) { 
+                document.getElementById('activityLog').innerHTML = '<p style="color:#ff4444;padding:2rem;text-align:center;">Failed to load activity</p>'; 
+            }
+        };
+
+        document.getElementById('copyKeyBtn').addEventListener('click', function() {
+            navigator.clipboard.writeText(apiKey);
+            this.textContent = '✓ Copied!';
+            this.classList.add('copied');
+            setTimeout(() => { this.textContent = 'Copy'; this.classList.remove('copied'); }, 2000);
+        });
+
+        document.getElementById('copyCurlBtn').addEventListener('click', function() {
+            const curlText = document.getElementById('curlExample').textContent;
+            navigator.clipboard.writeText(curlText);
+            this.textContent = '✓ Copied!';
+            this.classList.add('copied');
+            setTimeout(() => { this.textContent = 'Copy'; this.classList.remove('copied'); }, 2000);
+        });
+
+        window.copyCode = function(btn, id) {
+            const codeBlock = btn.parentElement;
+            const text = codeBlock.textContent.replace('Copy', '').trim();
+            navigator.clipboard.writeText(text);
+            btn.textContent = '✓ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+        };
+
+        window.sendTestRequest = async function() {
+            try {
+                const endpoint = document.getElementById('testEndpoint').value;
+                const payload = document.getElementById('testPayload').value;
+                const isGet = endpoint === '/dashboard';
+                const options = { 
+                    method: isGet ? 'GET' : 'POST', 
+                    headers: {'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json'} 
+                };
+                if (!isGet && payload) options.body = payload;
+                
+                const response = await fetch(`${API}${endpoint}`, options);
+                const data = await response.json();
+                
+                document.getElementById('testResult').style.display = 'block';
+                document.getElementById('testResultContent').textContent = JSON.stringify(data, null, 2);
+                showAlert('success', 'Request sent!');
+                
+                await loadDashboard(true);
+            } catch (e) {
+                document.getElementById('testResult').style.display = 'block';
+                document.getElementById('testResultContent').textContent = 'Error: ' + e.message;
+                showAlert('error', 'Request failed');
+            }
+        };
+
+        window.sendContactMessage = function() {
+            const subject = document.getElementById('contactSubject').value;
+            const message = document.getElementById('contactMessage').value;
+            if (!subject || !message) { showAlert('warning', 'Fill in both fields'); return; }
+            const mailtoLink = `mailto:theiogamer1st@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message + '\n\n---\nFrom: ' + currentUser.email)}`;
+            window.location.href = mailtoLink;
+        };
+
+        document.getElementById('testEndpoint').addEventListener('change', function() {
+            const endpoint = this.value;
+            const payloadGroup = document.getElementById('payloadGroup');
+            const payload = document.getElementById('testPayload');
+            if (endpoint === '/dashboard') { 
+                payloadGroup.style.display = 'none'; 
+            } else {
+                payloadGroup.style.display = 'block';
+                const examples = {
+                    '/chat': '{"chat_id": "test_user_123", "message": "I love pizza and hate olives"}',
+                    '/search': '{"chat_id": "test_user_123", "query": "What foods do I like?"}',
+                    '/process': '{"chat_id": "test_user_123", "message": "Remember this important thing"}'
+                };
+                payload.value = examples[endpoint] || payload.value;
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            await signOut(auth);
+            localStorage.removeItem('chatsorter_api_key');
+            window.location.href = 'login.html';
+        });
+
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+                document.getElementById(section).style.display = 'block';
+                if (section === 'usage') window.loadActivity();
+            });
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatSorter - Memory for AI Chatbots</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #fff; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        
+        nav { padding: 1.5rem 0; border-bottom: 1px solid #222; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 700; color: #00ff88; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: #fff; text-decoration: none; transition: color 0.3s; }
+        .nav-links a:hover { color: #00ff88; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary { background: #00ff88; color: #0a0a0a; }
+        .btn-primary:hover { background: #00cc66; transform: scale(1.05); }
+        .btn-secondary { background: transparent; border: 1px solid #333; color: #888; }
+        
+        .hero { text-align: center; padding: 6rem 0 3rem; }
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; line-height: 1.2; }
+        .highlight { color: #00ff88; }
+        .hero-subtitle { font-size: 1.25rem; color: #aaa; margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; margin-bottom: 4rem; }
+        
+        .stats { display: flex; justify-content: center; gap: 4rem; margin-top: 3rem; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 3rem; font-weight: 700; color: #00ff88; }
+        .stat-label { color: #888; font-size: 1rem; margin-top: 0.5rem; }
+        
+        .features { padding: 6rem 0; }
+        .section-title { font-size: 3.5rem; margin-bottom: 1rem; text-align: center; }
+        .section-subtitle { color: #888; font-size: 1.2rem; margin-bottom: 4rem; text-align: center; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .feature-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 2.5rem; transition: all 0.3s; }
+        .feature-card:hover { border-color: #333; transform: translateY(-5px); }
+        .feature-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+        .feature-title { font-size: 1.5rem; margin-bottom: 1rem; }
+        .feature-description { color: #888; line-height: 1.6; }
+        
+        footer { border-top: 1px solid #222; padding: 4rem 0 2rem; margin-top: 6rem; }
+        .footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+        .footer-brand p { color: #888; margin-top: 1rem; }
+        .footer-section h4 { margin-bottom: 1.5rem; font-size: 0.9rem; text-transform: uppercase; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.75rem; }
+        .footer-links a { color: #888; text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: #00ff88; }
+        .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid #222; color: #666; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .footer-content { grid-template-columns: 1fr; }
+            .stats { flex-direction: column; gap: 2rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo"><span></span><span>ChatSorter</span></a>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="login.html" class="btn btn-secondary">Login</a>
+                    <a href="login.html" class="btn btn-primary">Start Free</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Long-term Memory for<br><span class="highlight">AI Chatbots</span></h1>
+            <p class="hero-subtitle">
+                Your AI remembers everything. Your users love it. Save 95% on API costs with intelligent semantic memory.
+            </p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn btn-primary">Start Free →</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">Cost Reduction</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0.5ms</div>
+                    <div class="stat-label">Retrieval Time</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">$20K+</div>
+                    <div class="stat-label">Saved Per Month</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Why <span class="highlight">ChatSorter</span></h2>
+            <p class="section-subtitle">Not just storage - intelligent semantic compression</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Semantic Search</h3>
+                    <p class="feature-description">
+                        Finds relevant memories by meaning, not keywords. "I like pizza" returns when asked "What food do I enjoy?"
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Importance Scoring</h3>
+                    <p class="feature-description">
+                        Every message scored 0-10. Critical info stays forever. Small talk fades away automatically.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">3 Lines of Code</h3>
+                    <p class="feature-description">
+                        No infrastructure setup. No vector DB. Just POST messages, GET context back. That's it.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Smart Compression</h3>
+                    <p class="feature-description">
+                        100 messages → 20 summaries + 12 key facts. Model sees 32 items instead of 100.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Time Decay</h3>
+                    <p class="feature-description">
+                        Old unimportant messages fade. Critical info persists. Keeps memory relevant without manual cleanup.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Entity Extraction</h3>
+                    <p class="feature-description">
+                        Automatically identifies people, places, dates. Knows "Alex" is a person, "NYC" is a location.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo"><span></span><span>ChatSorter</span></div>
+                    <p>Intelligent semantic memory for AI chatbots. Save 95% on API costs.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="login.html">Get Started</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="mailto:theiogamer1st@gmail.com">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© 2025 ChatSorter. All rights reserved.</div>
+        </div>
+    </footer>
+</body>
+</html>

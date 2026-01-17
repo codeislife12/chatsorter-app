@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ChatSorter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .login-container { background: #111; border: 1px solid #222; border-radius: 16px; padding: 3rem; max-width: 450px; width: 100%; }
+        .logo { text-align: center; margin-bottom: 2rem; font-size: 3rem; }
+        .logo-text { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; color: #00ff88; }
+        .tab-buttons { display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #0a0a0a; padding: 0.5rem; border-radius: 8px; }
+        .tab-btn { flex: 1; padding: 0.75rem; border: none; background: transparent; color: #888; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-family: inherit; font-size: 1rem; }
+        .tab-btn.active { background: #00ff88; color: #0a0a0a; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #aaa; font-size: 0.9rem; }
+        .form-group input { width: 100%; padding: 0.75rem; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 1rem; font-family: inherit; }
+        .form-group input:focus { outline: none; border-color: #00ff88; }
+        .btn { width: 100%; padding: 0.75rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.2s; font-family: inherit; }
+        .btn-primary { background: #00ff88; color: #0a0a0a; }
+        .btn-primary:hover { transform: translateY(-2px); background: #00cc66; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .oauth-section { margin: 2rem 0; }
+        .oauth-divider { text-align: center; color: #666; font-size: 0.85rem; margin: 1.5rem 0; position: relative; }
+        .oauth-divider::before, .oauth-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: #333; }
+        .oauth-divider::before { left: 0; }
+        .oauth-divider::after { right: 0; }
+        .oauth-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
+        .btn-oauth { display: flex; align-items: center; justify-content: center; gap: 0.75rem; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 0.75rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-family: inherit; font-size: 1rem; }
+        .btn-oauth:hover { background: #222; border-color: #00ff88; transform: translateY(-2px); }
+        .btn-oauth svg { width: 20px; height: 20px; }
+        .error-message, .success-message { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
+        .error-message { background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; }
+        .success-message { background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; color: #00ff88; }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .back-link { text-align: center; margin-top: 2rem; }
+        .back-link a { color: #00ff88; text-decoration: none; }
+        .loading { display: none; text-align: center; padding: 1rem; }
+        .loading-spinner { width: 30px; height: 30px; border: 3px solid #222; border-top-color: #00ff88; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <div></div>
+            <div class="logo-text">ChatSorter</div>
+        </div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="loginTab">Login</button>
+            <button class="tab-btn" id="signupTab">Sign Up</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 1rem;">Processing...</p>
+        </div>
+
+        <div id="oauthSection" class="oauth-section">
+            <div class="oauth-buttons">
+                <button class="btn-oauth" id="googleBtn">
+                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+                    Continue with Google
+                </button>
+                <button class="btn-oauth" id="githubBtn">
+                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33c.85 0 1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                    Continue with GitHub
+                </button>
+            </div>
+            <div class="oauth-divider">or use email</div>
+        </div>
+
+        <form id="loginForm" class="form-section active">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="you@company.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+
+        <form id="signupForm" class="form-section">
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="signupName" placeholder="Acme Inc" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signupEmail" placeholder="you@company.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword" minlength="6" placeholder="Min 6 characters" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+
+        <div class="back-link"><a href="index.html">← Back to Home</a></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    signInWithPopup,
+    GoogleAuthProvider,
+    GithubAuthProvider
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+
+        const app = initializeApp({
+            apiKey: "AIzaSyBdXvmBmjNuT1cCUUU_w9pUaRKTimtcgYA",
+            authDomain: "chatsorter.firebaseapp.com",
+            projectId: "chatsorter",
+            storageBucket: "chatsorter.firebasestorage.app",
+            messagingSenderId: "299452275355",
+            appId: "1:299452275355:web:1403fca56fd284c15a443e"
+        });
+
+        const auth = getAuth(app);
+        const API = 'https://burton-knights-zealand-determine.trycloudflare.com';
+
+        // Track if we're checking existing user to prevent double redirect
+        let isCheckingExistingUser = false;
+
+        // Check if user already has API key on page load
+        onAuthStateChanged(auth, async (user) => {
+            if (user && !isCheckingExistingUser) {
+                isCheckingExistingUser = true;
+                try {
+                    const response = await fetch(`${API}/get-my-key`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({email: user.email, create_if_missing: false})
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success && data.api_key) {
+                        window.location.href = 'dashboard.html';
+                        return;
+                    }
+                } catch(e) {
+                    console.log('API check failed, staying on login page');
+                }
+                isCheckingExistingUser = false;
+            }
+        });
+
+        document.getElementById('loginTab').addEventListener('click', () => switchTab('login'));
+        document.getElementById('signupTab').addEventListener('click', () => switchTab('signup'));
+
+        function switchTab(tab) {
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+            } else {
+                loginTab.classList.remove('active');
+                signupTab.classList.add('active');
+                loginForm.classList.remove('active');
+                signupForm.classList.add('active');
+            }
+            
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showError(msg) {
+            document.getElementById('errorMessage').textContent = msg;
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successMessage').textContent = msg;
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('oauthSection').style.display = show ? 'none' : 'block';
+            document.querySelectorAll('form').forEach(f => f.style.display = show ? 'none' : 'block');
+        }
+
+        document.getElementById('googleBtn').addEventListener('click', async () => {
+            showLoading(true);
+            isCheckingExistingUser = true;
+            try {
+                const provider = new GoogleAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                
+                const checkResponse = await fetch(`${API}/get-my-key`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: result.user.email, create_if_missing: false})
+                });
+                const checkData = await checkResponse.json();
+                
+                if (checkData.success && checkData.api_key) {
+                    showSuccess('✓ Welcome back!');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                } else {
+                    showSuccess('✓ Signed in!');
+                    setTimeout(() => window.location.href = 'plans.html', 1000);
+                }
+            } catch (error) {
+                showLoading(false);
+                isCheckingExistingUser = false;
+                showError('Google sign-in failed: ' + error.message);
+            }
+        });
+
+        document.getElementById('githubBtn').addEventListener('click', async () => {
+            showLoading(true);
+            isCheckingExistingUser = true;
+            try {
+                const provider = new GithubAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                
+                const checkResponse = await fetch(`${API}/get-my-key`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: result.user.email, create_if_missing: false})
+                });
+                const checkData = await checkResponse.json();
+                
+                if (checkData.success && checkData.api_key) {
+                    showSuccess('✓ Welcome back!');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                } else {
+                    showSuccess('✓ Signed in!');
+                    setTimeout(() => window.location.href = 'plans.html', 1000);
+                }
+            } catch (error) {
+                showLoading(false);
+                isCheckingExistingUser = false;
+                showError('GitHub sign-in failed: ' + error.message);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading(true);
+            isCheckingExistingUser = true;
+            try {
+                const result = await signInWithEmailAndPassword(
+                    auth,
+                    document.getElementById('loginEmail').value,
+                    document.getElementById('loginPassword').value
+                );
+                
+                const checkResponse = await fetch(`${API}/get-my-key`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: result.user.email, create_if_missing: false})
+                });
+                const checkData = await checkResponse.json();
+                
+                if (checkData.success && checkData.api_key) {
+                    showSuccess('✓ Welcome back!');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                } else {
+                    showSuccess('✓ Login successful!');
+                    setTimeout(() => window.location.href = 'plans.html', 1000);
+                }
+            } catch (error) {
+                showLoading(false);
+                isCheckingExistingUser = false;
+                showError('Login failed: ' + error.message);
+            }
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading(true);
+            try {
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, { displayName: name });
+                
+                // New users always go to plans
+                showSuccess('✓ Account created!');
+                setTimeout(() => window.location.href = 'plans.html', 1500);
+            } catch (error) {
+                showLoading(false);
+                showError('Signup failed: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
